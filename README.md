@@ -19,7 +19,8 @@ For full documentation of its API check the
 
 ### Computing the Randomness ###
 
-Denote the delay function by f. The randomness is computed as follows:
+Denote the delay function by f (see the reference code for a simple implementation example).
+The randomness is computed as follows:
 1. Given a block, compute ```b:=keccak256(block_hash, ‘veedo’)```.
 2. Compute the delay function seed ```s=<x,y>``` by taking the lowest 250 bits of b and split them
 to a pair of 125-bit elements each:
