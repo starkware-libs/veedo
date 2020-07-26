@@ -37,12 +37,12 @@ The proof is for the following statement: "```<x_out, y_out>``` is the result of
 ```s=<x,y>``` for n iterations".
 
 
-### Deployed Contract ###
+### Deployed Contracts ###
 
 
-|         | Mainnet                                      | Ropsten   |
-|---------|---------------------------------------------| ------------------|
-| Pulse | 820 (every ~3 hours) |   240 (every ~1 hour)  |
-| Beacon | [0xC405fF8406bFfBc97bc46a1Ae5ECe55112DcF8f4](https://etherscan.io/address/0xC405fF8406bFfBc97bc46a1Ae5ECe55112DcF8f4) | [0x79474439753C7c70011C3b00e06e559378bAD040](https://ropsten.etherscan.io/address/0x79474439753C7c70011C3b00e06e559378bAD040) |
+|          | Mainnet              | Ropsten                 |
+|----------|----------------------|-------------------------|
+| Pulse    | 820 (every ~3 hours) |   500 (every ~2 hours)  |
+| Beacon   | [0xC405fF8406bFfBc97bc46a1Ae5ECe55112DcF8f4](https://etherscan.io/address/0xC405fF8406bFfBc97bc46a1Ae5ECe55112DcF8f4) | [0x79474439753C7c70011C3b00e06e559378bAD040](https://ropsten.etherscan.io/address/0x79474439753C7c70011C3b00e06e559378bAD040) |
 | Verifier | [0x5a6a37B41865EB940C5dD4fFe162e53B7EE22090](https://etherscan.io/address/0x5a6a37B41865EB940C5dD4fFe162e53B7EE22090) | [0x0009dA3Fe548eDE649089A862e702874D0CADa2F](https://ropsten.etherscan.io/address/0x0009dA3Fe548eDE649089A862e702874D0CADa2F) |
 
