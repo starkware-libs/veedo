@@ -1,48 +1,46 @@
 ## VeeDo ##
 
-VeeDo is a STARK-based Verifiable Delay Function (VDF) service. It is used for periodically
-generating a secure random number every *pulse* blocks, i.e., every block such that its number
-is divisible by the pulse (see the different pulse values in *Deployed Contract* below).
-The randomness is generated from a block hash according to what is explained in
-*Computing the Randomness* section. A proof attesting to the validity of the computation is
-generated and sent to the STARK Verifier for a verification  process (see the
-[Verifier contract](https://github.com/starkware-libs/veedo/blob/master/contracts/MimcVerifier.sol)).
-The Beacon contract registers the new randomness if the Verifier accepts the corresponding proof.
+VeeDo is a STARK-based Verifiable Delay Function (VDF) service.
+VeeDo works in the Vending Machine model - a user can request a randomness for a specific input, sending payment in advance. An off-chain service picks up the request, computes the randomness and generates a proof attesting to the validity of the computation. The proof is then sent to the STARK Verifier for a verification  process (see the [Verifier contract](https://github.com/starkware-libs/veedo/blob/master/contracts/MimcVerifier.sol)). The [Vending contract](https://github.com/starkware-libs/veedo/blob/master/contracts/VendingMachineERC20.sol) registers the new randomness if the Verifier accepts the corresponding proof and sends the payment to the off-chain service.
+In case a request was not served, the user can reclaim the payment after sufficient time has passed.
 
 ### API ###
 
-The Beacon contract serves as the interface and has the following API:
-1. ```getRandomness(uint256 blockNumber)```
-2. ```getLatestRandomness()```
+The [Vending contract](https://github.com/starkware-libs/veedo/blob/master/contracts/VendingMachineERC20.sol)
+serves as the interface and has the following API:
+1. ```addPayment(uint256 seed, uint256 n_iter, uint256 tag, uint256 paymentAmount)```
+2. ```reclaimPayment(uint256 seed, uint256 n_iter, uint256 tag)```
+3. ```prizes(uint256 seed, uint256 n_iter) view```
+4. ```registeredRandomness(uint256 seed, uint256 n_iter) view```
+5. ```payments(address sender, uint256 seed, uint256 n_iter, uint256 tag) view```
 
-For full documentation of its API check the
-[Beacon contract](https://github.com/starkware-libs/veedo/blob/master/contracts/BeaconContract.sol).
+Full implementation can be found in the [code](https://github.com/starkware-libs/veedo/blob/master/contracts/VendingMachineERC20.sol).
+
 
 ### Computing the Randomness ###
 
-Denote the delay function by f (see the [reference code](https://github.com/starkware-libs/veedo/blob/master/reference-code/delay_function.sage) for a simple implementation example).
-The randomness is computed as follows:
-1. Given a block, compute ```b:=keccak256(block_hash, ‘veedo’)```.
-2. Compute the delay function seed ```s=<x,y>``` by taking the lowest 250 bits of b and split them
-to a pair of 125-bit elements each:
-    - ```x: = b & ((1<<125)-1)```
-    - ```y: = b >> 125 & ((1<<125)-1)```
-3. Compute f on ```s=<x,y>``` for n iterations.
-4. Denote ```f(s,n):=<x_out, y_out>```. ```Randomness:= keccak256(x_out, y_out, ‘veedo’)```.
+Denote the delay function by ```f``` (see the [reference code](https://github.com/starkware-libs/veedo/blob/master/reference-code/delay_function.sage) for a simple implementation example).
+The randomness on ```(seed, n_iter)``` is computed as follows:
+1. Compute ```b:=keccak256(uint256 seed, string ‘veedo’)```.
+2. Compute the delay function input ```input=<x_in,y_in>``` by taking the lowest 250 bits of ```b```
+and splitting them to a pair of 125-bit elements each:
+    - ```x_in: = b & ((1<<125)-1)```
+    - ```y_in: = b >> 125 & ((1<<125)-1)```
+3. Compute ```f``` on ```input=<x_in,y_in>``` for ```n_iter``` iterations.
+4. Denote ```f(input,n_iter):=<x_out, y_out>```. ```Randomness:= keccak256(x_out, y_out, ‘veedo’)```.
 
 
 ### Proof Statement ###
 
-The proof is for the following statement: "```<x_out, y_out>``` is the result of calculating f on
-```s=<x,y>``` for n iterations".
+The proof is for the following statement: "```<x_out, y_out>``` is the result of calculating ```f```
+on ```input=<x_in,y_in>``` for ```n_iter``` iterations".
 
 
 ### Deployed Contracts ###
 
-
 |          | Mainnet              | Ropsten                 |
 |----------|----------------------|-------------------------|
-| Pulse    | 820 (every ~3 hours) |   500 (every ~2 hours)  |
-| Beacon   | [0xC405fF8406bFfBc97bc46a1Ae5ECe55112DcF8f4](https://etherscan.io/address/0xC405fF8406bFfBc97bc46a1Ae5ECe55112DcF8f4) | [0x79474439753C7c70011C3b00e06e559378bAD040](https://ropsten.etherscan.io/address/0x79474439753C7c70011C3b00e06e559378bAD040) |
-| Verifier | [0x5a6a37B41865EB940C5dD4fFe162e53B7EE22090](https://etherscan.io/address/0x5a6a37B41865EB940C5dD4fFe162e53B7EE22090) | [0x0009dA3Fe548eDE649089A862e702874D0CADa2F](https://ropsten.etherscan.io/address/0x0009dA3Fe548eDE649089A862e702874D0CADa2F) |
+| Vending  | Currently N/A | [0x45D88Ca5aF1eA87b8c38377b6B4455E75225db26](https://ropsten.etherscan.io/address/0x45D88Ca5aF1eA87b8c38377b6B4455E75225db26) |
+| Verifier | Currently N/A | [0x70165E8Bea7cE6E6EC456e0eb1b1dD55c3Ca7811](https://ropsten.etherscan.io/address/0x70165E8Bea7cE6E6EC456e0eb1b1dD55c3Ca7811) |
+| Accepted ```n_iter```| Currently N/A | 10239 |
 

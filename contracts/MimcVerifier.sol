@@ -8,13 +8,14 @@ import "./PublicInputOffsets.sol";
 import "./FactRegistry.sol";
 
 contract PeriodicColumnContract {
-    function compute(uint256 x) external pure returns(uint256 result);
+    function compute(uint256 x) external pure returns (uint256 result);
 }
 
 contract MimcVerifier is StarkParameters, StarkVerifier, FactRegistry, PublicInputOffsets{
 
     MimcConstraintPoly constraintPoly;
     PeriodicColumnContract[20] constantsCols;
+    uint256 internal constant PUBLIC_INPUT_SIZE = 5;
 
     constructor(
         address[] memory auxPolynomials,
@@ -27,7 +28,7 @@ contract MimcVerifier is StarkParameters, StarkVerifier, FactRegistry, PublicInp
         )
         public {
         constraintPoly = MimcConstraintPoly(auxPolynomials[0]);
-        for(uint256 i=0; i < 20; i++){
+        for (uint256 i = 0; i < 20; i++) {
             constantsCols[i] = PeriodicColumnContract(auxPolynomials[i+1]);
         }
         oodsContractAddress = address(oodsContract);
@@ -41,44 +42,57 @@ contract MimcVerifier is StarkParameters, StarkVerifier, FactRegistry, PublicInp
         external
     {
         verifyProof(proofParams, proof, publicInput);
-        registerFact(keccak256(abi.encodePacked(publicInput)));
+        registerFact(
+            keccak256(
+                abi.encodePacked(
+                    10 * 2**publicInput[OFFSET_LOG_TRACE_LENGTH] - 1,
+                    publicInput[OFFSET_VDF_OUTPUT_X],
+                    publicInput[OFFSET_VDF_OUTPUT_Y],
+                    publicInput[OFFSET_VDF_INPUT_X],
+                    publicInput[OFFSET_VDF_INPUT_Y]
+                )
+            )
+        );
     }
 
-    function getNColumnsInTrace() internal pure returns(uint256) {
+    function getNColumnsInTrace() internal pure returns (uint256) {
         return N_COLUMNS_IN_MASK;
     }
 
-    function getNColumnsInComposition() internal pure returns(uint256) {
+    function getNColumnsInComposition() internal pure returns (uint256) {
         return CONSTRAINTS_DEGREE_BOUND;
     }
 
-    function getMmCoefficients() internal pure returns(uint256) {
+    function getMmCoefficients() internal pure returns (uint256) {
         return MM_COEFFICIENTS;
     }
 
-    function getMmOodsValues() internal pure returns(uint256) {
+    function getMmOodsValues() internal pure returns (uint256) {
         return MM_OODS_VALUES;
     }
 
-    function getMmOodsCoefficients() internal pure returns(uint256) {
+    function getMmOodsCoefficients() internal pure returns (uint256) {
         return MM_OODS_COEFFICIENTS;
     }
 
-    function getNCoefficients() internal pure returns(uint256) {
+    function getNCoefficients() internal pure returns (uint256) {
         return N_COEFFICIENTS;
     }
 
-    function getNOodsValues() internal pure returns(uint256) {
+    function getNOodsValues() internal pure returns (uint256) {
         return N_OODS_VALUES;
     }
 
-    function getNOodsCoefficients() internal pure returns(uint256) {
+    function getNOodsCoefficients() internal pure returns (uint256) {
         return N_OODS_COEFFICIENTS;
     }
 
     function airSpecificInit(uint256[] memory publicInput)
         internal returns (uint256[] memory ctx, uint256 logTraceLength)
     {
+        require(publicInput.length == PUBLIC_INPUT_SIZE,
+            "INVALID_PUBLIC_INPUT_LENGTH"
+        );
         ctx = new uint256[](MM_CONTEXT_SIZE);
 
         // Note that the prover does the VDF computation the other way around (uses the inverse
