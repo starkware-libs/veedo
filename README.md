@@ -5,6 +5,7 @@ VeeDo works in the Vending Machine model - a user can request a randomness for a
 In case a request was not served, the user can reclaim the payment after sufficient time has passed.
 VeeDo accepts payments both in ERC20 and in ETH. See below for a list of deployed contracts.
 
+
 ### API ###
 
 The [Vending ERC20 contract](https://github.com/starkware-libs/veedo/blob/master/contracts/VendingMachineERC20.sol) has the following API:
@@ -40,6 +41,22 @@ and splitting them to a pair of 125-bit elements each:
 The proof is for the following statement: "```<x_out, y_out>``` is the result of calculating ```f```
 on ```input=<x_in,y_in>``` for ```n_iter``` iterations".
 
+### Delay and Security ###
+
+VeeDo service has to complete a serial computation, that comprises a configurable number of iterations. The number of iterations determines the time delay until the randomness is available.
+A longer delay increases the security since it means that any other party, possibly malicious, also has to wait for this long delay to achieve the VDF result.
+Specifically when using the previous block hash as a seed, it would become harder to reorganize the blocks and replace the chosen block hash, as time passes.
+VeeDo offers two different approximate delays, a 3.5-minute delay and a 7-minute delay, which corresponds to 335544319 and 671088639 iterations, respectivly.
+The delays were measured on an Intel i7-7700K processor with 4 cores and 4 vcpus (8 total), with frequency 4.5Ghz.
+
+### Prices ###
+
+| Number of Iterations| Delay   | Price - Eth | Price - Dai |
+|---------------------|---------|-------------|-------------|
+|335544319            |3 minutes|0.2          |80           |
+|671088639            |7 minutes|0.35         |140          |
+
+*Prices may change from time to time due to fluctuations in the gas price.
 
 ### Deployed Contracts ###
 
